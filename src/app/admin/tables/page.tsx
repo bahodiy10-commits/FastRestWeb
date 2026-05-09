@@ -15,7 +15,7 @@ interface Table {
   createdAt: number
 }
 
-const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://fastrest.app').replace(/\/$/, '')
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://fast-rest-web.vercel.app').replace(/\/$/, '')
 
 async function makeQrImage(url: string): Promise<string> {
   return await QRCode.toDataURL(url, {
@@ -75,9 +75,13 @@ export default function TablesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bu stolni o'chirishni tasdiqlaysizmi?")) return
-    await deleteDoc(doc(db, 'tables', id))
-    if (preview?.id === id) setPreview(null)
+    try {
+      await deleteDoc(doc(db, 'tables', id))
+      if (preview?.id === id) setPreview(null)
+    } catch (e) {
+      console.error(e)
+      alert("O'chirishda xato yuz berdi")
+    }
   }
 
   return (
@@ -128,7 +132,10 @@ export default function TablesPage() {
               <p className="text-white font-bold">{table.room} — Stol #{table.number}</p>
               <p className="text-xs mt-0.5 truncate" style={{ color: '#D4AF37' }}>{table.qrUrl || 'Yaratilmoqda...'}</p>
               <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block"
-                style={{ background: table.status === 'available' ? 'rgba(0,200,150,0.15)' : 'rgba(255,77,109,0.15)', color: table.status === 'available' ? '#00C896' : '#FF4D6D' }}>
+                style={{
+                  background: table.status === 'available' ? 'rgba(0,200,150,0.15)' : 'rgba(255,77,109,0.15)',
+                  color: table.status === 'available' ? '#00C896' : '#FF4D6D'
+                }}>
                 {table.status === 'available' ? "🟢 Bo'sh" : '🔴 Band'}
               </span>
             </div>
