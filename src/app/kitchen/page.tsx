@@ -1,94 +1,92 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { db, auth } from '@/lib/firebase'
+import { signOut } from 'firebase/auth'
+import { useRouter } from 'next/navigation'
 import { Order } from '@/types'
 
 export default function KitchenPage() {
   const [orders, setOrders] = useState<Order[]>([])
-  const prevCount = useRef(0)
+  const router = useRouter()
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'orders'), snap => {
-      const newOrders = snap.docs.map(d => ({ id: d.id, ...d.data() } as Order))
-        .filter(o => o.status === 'new' || o.status === 'preparing')
-        .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
-      
-      if (newOrders.length > prevCount.current) {
-        try { new Audio('/notification.mp3').play() } catch(e) {}
-      }
-      prevCount.current = newOrders.length
-      setOrders(newOrders)
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Order))
+      setOrders(data.filter(o => o.status === 'new' || o.status === 'preparing'))
     })
     return unsub
   }, [])
 
-  const markReady = async (id: string) => {
+  const handleReady = async (id: string) => {
     await updateDoc(doc(db, 'orders', id), { status: 'ready' })
   }
 
-  const markPreparing = async (id: string) => {
-    await updateDoc(doc(db, 'orders', id), { status: 'preparing' })
+  const handleLogout = async () => {
+    await signOut(auth)
+    router.push('/')
   }
 
   return (
-    <div className="min-h-screen p-4" style={{background: '#0B0B0F'}}>
+    <div className="min-h-screen p-4" style={{ background: '#0B0B0F' }}>
       <div className="flex justify-between items-center mb-6 pt-2">
-        <h1 className="text-2xl font-bold" style={{color: '#D4AF37'}}>👨‍🍳 Oshxona</h1>
-        <span className="px-3 py-1 rounded-full text-sm font-bold"
-          style={{background: orders.length > 0 ? '#D4AF3733' : '#1E1E24', color: '#D4AF37'}}>
-          {orders.length} buyurtma
-        </span>
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: '#D4AF37' }}>
+            👨‍🍳 Oshxona
+          </h1>
+          <p className="text-gray-400 text-sm">{orders.length} buyurtma</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 rounded-xl text-sm font-bold"
+          style={{ background: 'rgba(255,77,109,0.15)', color: '#FF4D6D' }}
+        >
+          Chiqish
+        </button>
       </div>
 
       {orders.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-6xl mb-4">✅</p>
-          <p className="text-gray-400 text-lg">Barcha buyurtmalar bajarildi!</p>
+        <div className="flex flex-col items-center justify-center py-32">
+          <div className="text-7xl mb-4">✅</div>
+          <p className="text-white text-lg font-bold">Barcha buyurtmalar bajarildi!</p>
+          <p className="text-gray-500 text-sm mt-2">Yangi buyurtma kelishini kuting</p>
         </div>
       ) : (
         <div className="space-y-4">
           {orders.map(order => (
             <div key={order.id} className="p-4 rounded-2xl"
-              style={{background: '#1E1E24', border: `2px solid ${order.status === 'new' ? '#D4AF37' : '#3B82F6'}44`}}>
+              style={{ background: '#1E1E24', border: '1px solid #2A2A35' }}>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-white font-bold text-xl">🪑 Stol #{order.tableId}</span>
-                <span className="px-3 py-1 rounded-full text-sm font-bold"
-                  style={{background: order.status === 'new' ? '#D4AF3733' : '#3B82F633',
-                    color: order.status === 'new' ? '#D4AF37' : '#3B82F6'}}>
-                  {order.status === 'new' ? '🆕 Yangi' : '⏳ Jarayonda'}
+                <p className="font-bold text-lg" style={{ color: '#D4AF37' }}>
+                  Stol #{order.tableId}
+                </p>
+                <span className="text-xs px-3 py-1 rounded-full"
+                  style={{
+                    background: order.status === 'new' ? 'rgba(212,175,55,0.15)' : 'rgba(59,130,246,0.15)',
+                    color: order.status === 'new' ? '#D4AF37' : '#3B82F6'
+                  }}>
+                  {order.status === 'new' ? '🆕 Yangi' : '🔄 Tayyorlanmoqda'}
                 </span>
               </div>
 
               <div className="space-y-2 mb-4">
-                {order.items?.map((item, i) => (
-                  <div key={i} className="flex justify-between items-center p-2 rounded-xl"
-                    style={{background: '#0B0B0F'}}>
-                    <span className="text-white font-medium">{item.menuItem?.name}</span>
-                    <span className="text-2xl font-bold" style={{color: '#D4AF37'}}>x{item.quantity}</span>
+                {order.items?.map((item: any, i: number) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span className="text-white">{item.menuItem?.name}</span>
+                    <span className="text-gray-400">× {item.quantity}</span>
                   </div>
                 ))}
               </div>
 
-              {order.items?.some(i => i.comment) && (
-                <div className="p-2 rounded-xl mb-3" style={{background: '#D4AF3722'}}>
-                  <p className="text-xs" style={{color: '#D4AF37'}}>
-                    📝 {order.items.filter(i => i.comment).map(i => i.comment).join(', ')}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                {order.status === 'new' && (
-                  <button onClick={() => markPreparing(order.id)}
-                    className="flex-1 py-3 rounded-xl font-bold"
-                    style={{background: '#3B82F633', color: '#3B82F6'}}>
-                    ⏳ Boshlash
-                  </button>
-                )}
-                <button onClick={() => markReady(order.id)}
-                  className="flex-1 py-3 rounded-xl font-bold text-black"
-                  style={{background: '#00C896'}}>
+              <div className="flex justify-between items-center">
+                <p className="font-bold" style={{ color: '#00C896' }}>
+                  {order.total?.toLocaleString()} so'm
+                </p>
+                <button
+                  onClick={() => handleReady(order.id)}
+                  className="px-5 py-2 rounded-xl font-bold text-black"
+                  style={{ background: '#00C896' }}
+                >
                   ✅ Tayyor
                 </button>
               </div>
