@@ -21,7 +21,7 @@ export default function CartPage() {
         createdAt: Date.now(),
       })
       clearCart()
-      router.push('/tracking')
+      router.push(`/tracking?id=${ref.id}`)
     } catch(e) {
       alert('Xato yuz berdi')
     }
