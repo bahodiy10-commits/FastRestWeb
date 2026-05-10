@@ -1,7 +1,6 @@
-import { initializeApp, getApps } from 'firebase/app'
+import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore, enableNetwork, connectFirestoreEmulator } from 'firebase/firestore'
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: "AIzaSyARexBtYfSJTnSod24OQudviRQvWGjEKvM",
@@ -12,16 +11,7 @@ const firebaseConfig = {
   appId: "1:711659144425:web:924ba0e8a424f44cf81c78"
 }
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 export const auth = getAuth(app)
-
-// Persistent cache — offline ham ishlaydi, sahifalar orasida tez
-export const db = getApps().length === 1 && !getApps()[0].name.includes('cache')
-  ? initializeFirestore(app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager()
-      })
-    })
-  : getFirestore(app)
-
+export const db = getFirestore(app)
 export default app

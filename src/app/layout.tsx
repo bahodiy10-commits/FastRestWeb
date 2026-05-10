@@ -10,8 +10,26 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uz">
-      <body style={{ background: '#0B0B0F', minHeight: '100vh' }}>
-        <BgWrapper>{children}</BgWrapper>
+      <body>
+        <div
+          id="global-bg"
+          style={{
+            position: 'fixed',
+            top: 0, left: 0,
+            width: '100%', height: '100%',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0,
+            zIndex: 0,
+            pointerEvents: 'none',
+            transform: 'translateZ(0)',
+            willChange: 'opacity',
+          }}
+        />
+        <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
+          <BgWrapper>{children}</BgWrapper>
+        </div>
       </body>
     </html>
   )
