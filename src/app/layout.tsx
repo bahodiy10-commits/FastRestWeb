@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import BgWrapper from '@/components/BgWrapper'
+import DataProvider from '@/components/DataProvider'
 
 export const metadata: Metadata = {
   title: 'FastRest',
@@ -28,7 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
-          <BgWrapper>{children}</BgWrapper>
+          <BgWrapper>
+            <DataProvider>
+              {children}
+            </DataProvider>
+          </BgWrapper>
         </div>
       </body>
     </html>

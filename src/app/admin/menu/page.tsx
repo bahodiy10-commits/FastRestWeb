@@ -1,7 +1,8 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore'
+import { useState, useRef } from 'react'
+import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { useDataStore } from '@/store/useDataStore'
 import { MenuItem } from '@/types'
 
 async function compressImage(base64: string): Promise<string> {
@@ -21,21 +22,13 @@ async function compressImage(base64: string): Promise<string> {
 }
 
 export default function AdminMenuPage() {
-  const [items, setItems] = useState<MenuItem[]>([])
+  const { menu: items } = useDataStore()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({name:'',description:'',price:'',category:'',prepTime:'',image:''})
   const [imagePreview, setImagePreview] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-
-  useEffect(()=>{
-    // Filter YO'Q — hammasi ko'rinsin
-    const unsub = onSnapshot(collection(db,'menu'), snap=>{
-      setItems(snap.docs.map(d=>({id:d.id,...d.data()} as MenuItem)))
-    })
-    return unsub
-  },[])
 
   const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -70,9 +63,7 @@ export default function AdminMenuPage() {
       setShowForm(false)
     } catch(e:any) {
       setError('Xato: ' + (e?.message || JSON.stringify(e)))
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
   const toggleAvailable = async (id:string, available:boolean) => {
@@ -117,28 +108,26 @@ export default function AdminMenuPage() {
         <div className="p-4 rounded-2xl mb-6"
           style={{background:'rgba(30,30,36,0.97)',border:'1px solid #2A2A35',animation:'slideUp 0.3s ease'}}>
           <p className="text-white font-bold mb-4">➕ Yangi mahsulot</p>
-
           <div onClick={()=>fileRef.current?.click()}
             className="img-area w-full h-36 rounded-2xl mb-3 flex items-center justify-center cursor-pointer overflow-hidden"
             style={{border:'2px dashed #444',background:'rgba(0,0,0,0.3)'}}>
             {imagePreview ? (
-              <img src={imagePreview} className="w-full h-full object-cover rounded-2xl" alt=""/>
+              <img src={imagePreview} className="w-full h-full object-cover" alt=""/>
             ) : (
               <div className="text-center pointer-events-none">
                 <div className="text-3xl mb-1">📷</div>
-                <p className="text-gray-400 text-sm">Rasm yuklash (ixtiyoriy)</p>
+                <p className="text-gray-400 text-sm">Rasm yuklash</p>
               </div>
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} className="hidden"/>
-
           <div className="space-y-2 mb-3">
             {([
-              {key:'name', ph:'Nomi *', type:'text'},
-              {key:'description', ph:'Tavsif', type:'text'},
-              {key:'price', ph:'Narxi (so\'m) *', type:'number'},
-              {key:'category', ph:'Kategoriya (Kabob, Ichimlik...)', type:'text'},
-              {key:'prepTime', ph:'Tayyorlanish vaqti (daqiqa)', type:'number'},
+              {key:'name',ph:'Nomi *',type:'text'},
+              {key:'description',ph:'Tavsif',type:'text'},
+              {key:'price',ph:"Narxi (so'm) *",type:'number'},
+              {key:'category',ph:'Kategoriya',type:'text'},
+              {key:'prepTime',ph:'Tayyorlanish vaqti (daq)',type:'number'},
             ] as {key:string,ph:string,type:string}[]).map(f=>(
               <input key={f.key} type={f.type} placeholder={f.ph}
                 value={form[f.key as keyof typeof form]}
@@ -147,24 +136,15 @@ export default function AdminMenuPage() {
                 style={{background:'rgba(0,0,0,0.4)',border:'1px solid #444'}}/>
             ))}
           </div>
-
-          {error && (
-            <div className="mb-3 p-3 rounded-xl text-xs"
-              style={{background:'rgba(255,77,109,0.1)',color:'#FF4D6D',border:'1px solid rgba(255,77,109,0.25)'}}>
-              ⚠️ {error}
-            </div>
-          )}
-
+          {error && <div className="mb-3 p-3 rounded-xl text-xs" style={{background:'rgba(255,77,109,0.1)',color:'#FF4D6D'}}>⚠️ {error}</div>}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving}
               className="btn flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2"
-              style={{background:saving?'#8a7020':'#D4AF37',cursor:saving?'not-allowed':'pointer'}}>
-              {saving ? <><span className="spinner"/>Saqlanmoqda...</> : '✅ Saqlash'}
+              style={{background:saving?'#8a7020':'#D4AF37'}}>
+              {saving?<><span className="spinner"/>Saqlanmoqda...</>:'✅ Saqlash'}
             </button>
-            <button onClick={()=>{setShowForm(false);setImagePreview('');setError('');setForm({name:'',description:'',price:'',category:'',prepTime:'',image:''})}}
-              className="btn flex-1 py-3 rounded-xl text-white" style={{background:'#333'}}>
-              Bekor
-            </button>
+            <button onClick={()=>{setShowForm(false);setImagePreview('');setError('')}}
+              className="btn flex-1 py-3 rounded-xl text-white" style={{background:'#333'}}>Bekor</button>
           </div>
         </div>
       )}
@@ -173,32 +153,29 @@ export default function AdminMenuPage() {
         {items.map(item=>(
           <div key={item.id} className="item-card rounded-2xl overflow-hidden"
             style={{background:'rgba(30,30,36,0.97)',border:'1px solid #2A2A35'}}>
-            {item.image ? (
+            {item.image?(
               <img src={item.image} alt={item.name} className="w-full h-28 object-cover" loading="lazy"/>
-            ) : (
-              <div className="w-full h-28 flex items-center justify-center text-4xl"
-                style={{background:'rgba(0,0,0,0.3)'}}>🍽️</div>
+            ):(
+              <div className="w-full h-28 flex items-center justify-center text-4xl" style={{background:'rgba(0,0,0,0.3)'}}>🍽️</div>
             )}
             <div className="p-3">
-              <p className="text-white font-bold text-sm leading-tight">{item.name}</p>
-              {item.description && <p className="text-gray-500 text-xs mt-0.5 line-clamp-1">{item.description}</p>}
+              <p className="text-white font-bold text-sm">{item.name}</p>
               <p className="font-bold mt-1 text-sm" style={{color:'#D4AF37'}}>{item.price?.toLocaleString()} so'm</p>
               <p className="text-gray-600 text-xs">{item.category} • {item.prepTime} daq</p>
               <div className="flex gap-1 mt-2">
-                <button onClick={()=>toggleAvailable(item.id, item.available)}
+                <button onClick={()=>toggleAvailable(item.id,item.available)}
                   className="btn flex-1 py-1 rounded-lg text-xs font-medium"
                   style={{background:item.available!==false?'rgba(0,200,150,0.15)':'rgba(255,77,109,0.15)',
                     color:item.available!==false?'#00C896':'#FF4D6D'}}>
                   {item.available!==false?'✅ Bor':'❌ Yo\'q'}
                 </button>
-                <button onClick={()=>deleteItem(item.id)}
-                  className="btn px-2 py-1 rounded-lg text-xs"
+                <button onClick={()=>deleteItem(item.id)} className="btn px-2 py-1 rounded-lg text-xs"
                   style={{background:'rgba(255,77,109,0.15)',color:'#FF4D6D'}}>🗑</button>
               </div>
             </div>
           </div>
         ))}
-        {items.length===0 && (
+        {items.length===0&&(
           <div className="col-span-2 text-center py-16" style={{animation:'fadeIn 0.5s ease'}}>
             <div className="text-5xl mb-3">🍽️</div>
             <p className="text-gray-500">Menyu bo'sh</p>
