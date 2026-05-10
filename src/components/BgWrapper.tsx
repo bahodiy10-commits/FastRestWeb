@@ -12,8 +12,10 @@ export default function BgWrapper({ children }: { children: React.ReactNode }) {
       if (snap.exists()) {
         const img = snap.data().image || ''
         setBg(img)
-        try { if (img) localStorage.setItem('menuBackground', img)
-              else localStorage.removeItem('menuBackground') } catch(e) {}
+        try {
+          if (img) localStorage.setItem('menuBackground', img)
+          else localStorage.removeItem('menuBackground')
+        } catch(e) {}
       }
     })
     return unsub
@@ -24,15 +26,16 @@ export default function BgWrapper({ children }: { children: React.ReactNode }) {
       {bg && (
         <div style={{
           position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
+          top: 0,
+          left: 0,
           width: '100vw',
           height: '100vh',
           zIndex: 0,
           backgroundImage: `url(${bg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'center top',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.22,
+          opacity: 0.28,
           pointerEvents: 'none',
         }}/>
       )}
