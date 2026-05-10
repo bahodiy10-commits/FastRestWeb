@@ -21,20 +21,33 @@ export default function BgWrapper({ children }: { children: React.ReactNode }) {
     return unsub
   }, [])
 
-  // bg ni body ga style sifatida qo'yamiz — eng barqaror usul
   useEffect(() => {
+    const style = document.createElement('style')
+    style.id = 'bg-style'
     if (bg) {
-      document.body.style.backgroundImage = `url(${bg})`
-      document.body.style.backgroundSize = 'cover'
-      document.body.style.backgroundPosition = 'center'
-      document.body.style.backgroundRepeat = 'no-repeat'
-      document.body.style.backgroundAttachment = 'scroll'
+      style.textContent = `
+        html::before {
+          content: '';
+          position: fixed;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background-image: url('${bg}');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          opacity: 0.32;
+          z-index: -1;
+          pointer-events: none;
+          will-change: transform;
+          transform: translateZ(0);
+        }
+      `
     } else {
-      document.body.style.backgroundImage = 'none'
+      style.textContent = ''
     }
-    return () => {
-      document.body.style.backgroundImage = 'none'
-    }
+    const old = document.getElementById('bg-style')
+    if (old) old.remove()
+    document.head.appendChild(style)
   }, [bg])
 
   return (
