@@ -27,45 +27,58 @@ export default function LoginPage() {
         else if (userData.role === 'kitchen') router.push('/kitchen')
         else router.push('/menu')
       }
-    } catch (e) {
+    } catch(e) {
       setError('Email yoki parol noto\'g\'ri')
     }
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{background: '#0B0B0F'}}>
-      <div className="w-full max-w-md p-8 rounded-3xl" style={{background: '#1E1E24'}}>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <style>{`
+        @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .login-card{animation:slideUp 0.5s ease}
+        .btn{transition:transform 0.15s ease,box-shadow 0.2s}
+        .btn:active{transform:scale(0.97)}
+        .btn:hover{box-shadow:0 4px 20px rgba(212,175,55,0.35)}
+        .input-f{transition:border-color 0.2s,box-shadow 0.2s}
+        .input-f:focus{border-color:rgba(212,175,55,0.6)!important;outline:none;box-shadow:0 0 0 3px rgba(212,175,55,0.1)}
+        .spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
+      `}</style>
+
+      <div className="login-card w-full max-w-md p-8 rounded-3xl"
+        style={{background:'rgba(30,30,36,0.95)',border:'1px solid #2A2A35',backdropFilter:'blur(20px)'}}>
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">🍽️</div>
-          <h1 className="text-3xl font-bold" style={{color: '#D4AF37'}}>FastRest</h1>
+          <div className="text-5xl mb-3">🍽️</div>
+          <h1 className="text-3xl font-bold" style={{color:'#D4AF37'}}>FastRest</h1>
           <p className="text-gray-400 mt-1">Tizimga kirish</p>
         </div>
+
         <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="w-full p-4 rounded-2xl text-white outline-none"
-            style={{background: '#0B0B0F', border: '1px solid #333'}}
-          />
-          <input
-            type="password"
-            placeholder="Parol"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full p-4 rounded-2xl text-white outline-none"
-            style={{background: '#0B0B0F', border: '1px solid #333'}}
-          />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full p-4 rounded-2xl font-bold text-black"
-            style={{background: '#D4AF37'}}
-          >
-            {loading ? 'Kirish...' : 'Kirish'}
+          <input type="email" placeholder="Email" value={email}
+            onChange={e=>setEmail(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+            className="input-f w-full p-4 rounded-2xl text-white"
+            style={{background:'rgba(0,0,0,0.4)',border:'1px solid #333'}}/>
+          <input type="password" placeholder="Parol" value={password}
+            onChange={e=>setPassword(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+            className="input-f w-full p-4 rounded-2xl text-white"
+            style={{background:'rgba(0,0,0,0.4)',border:'1px solid #333'}}/>
+
+          {error && (
+            <p className="text-sm text-center px-3 py-2 rounded-xl"
+              style={{background:'rgba(255,77,109,0.1)',color:'#FF4D6D'}}>
+              ⚠️ {error}
+            </p>
+          )}
+
+          <button onClick={handleLogin} disabled={loading}
+            className="btn w-full p-4 rounded-2xl font-bold text-black text-lg flex items-center justify-center gap-2"
+            style={{background:loading?'#8a7020':'#D4AF37',cursor:loading?'not-allowed':'pointer'}}>
+            {loading ? <><span className="spinner"/>Kirish...</> : 'Kirish'}
           </button>
         </div>
       </div>
