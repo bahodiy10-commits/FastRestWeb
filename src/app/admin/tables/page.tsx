@@ -109,7 +109,7 @@ export default function TablesPage() {
   }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: '#0B0B0F' }}>
+    <div className="min-h-screen p-4" style={{ background: 'transparent' }}>
       <style>{`
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px); }
@@ -184,12 +184,12 @@ export default function TablesPage() {
             onChange={e => setNumber(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
             className="input-field w-20 p-3 rounded-xl text-white"
-            style={{ background: '#0B0B0F', border: '1px solid #333' }} />
+            style={{ background: 'transparent', border: '1px solid #333' }} />
           <input type="text" placeholder="Xona nomi (VIP, Asosiy...)" value={room}
             onChange={e => setRoom(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
             className="input-field flex-1 p-3 rounded-xl text-white"
-            style={{ background: '#0B0B0F', border: '1px solid #333' }} />
+            style={{ background: 'transparent', border: '1px solid #333' }} />
         </div>
 
         {error && (

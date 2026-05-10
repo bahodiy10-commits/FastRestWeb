@@ -37,7 +37,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: '#0B0B0F' }}>
+    <div className="min-h-screen p-4" style={{ background: 'transparent' }}>
       <style>{`
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(24px); }

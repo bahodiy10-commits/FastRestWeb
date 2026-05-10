@@ -109,7 +109,7 @@ export default function BackgroundPage() {
         <p className="text-white font-bold mb-4">📤 Rasm yuklash</p>
         <div onClick={() => fileRef.current?.click()}
           className="upload-area w-full h-48 rounded-2xl mb-4 flex items-center justify-center cursor-pointer overflow-hidden"
-          style={{border:'2px dashed #333',background:'#0B0B0F'}}>
+          style={{border:'2px dashed #333',background:'transparent'}}>
           {preview ? (
             <img src={preview} alt="preview" className="w-full h-full object-cover"/>
           ) : (

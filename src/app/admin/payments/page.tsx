@@ -118,11 +118,11 @@ export default function PaymentsPage() {
             <input placeholder="Nomi (masalan: Payme asosiy)" value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
               className="input-f w-full p-3 rounded-xl text-white"
-              style={{ background: '#0B0B0F', border: '1px solid #333' }} />
+              style={{ background: 'transparent', border: '1px solid #333' }} />
 
             <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value as any })}
               className="input-f w-full p-3 rounded-xl text-white"
-              style={{ background: '#0B0B0F', border: '1px solid #333' }}>
+              style={{ background: 'transparent', border: '1px solid #333' }}>
               {GW_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
             </select>
 
@@ -131,20 +131,20 @@ export default function PaymentsPage() {
                 <input placeholder="Merchant ID" value={form.merchantId}
                   onChange={e => setForm({ ...form, merchantId: e.target.value })}
                   className="input-f w-full p-3 rounded-xl text-white"
-                  style={{ background: '#0B0B0F', border: '1px solid #333' }} />
+                  style={{ background: 'transparent', border: '1px solid #333' }} />
                 {form.type === 'click' && (
                   <input placeholder="Service ID" value={form.serviceId}
                     onChange={e => setForm({ ...form, serviceId: e.target.value })}
                     className="input-f w-full p-3 rounded-xl text-white"
-                    style={{ background: '#0B0B0F', border: '1px solid #333' }} />
+                    style={{ background: 'transparent', border: '1px solid #333' }} />
                 )}
                 <input placeholder="Secret Key" value={form.secretKey} type="password"
                   onChange={e => setForm({ ...form, secretKey: e.target.value })}
                   className="input-f w-full p-3 rounded-xl text-white"
-                  style={{ background: '#0B0B0F', border: '1px solid #333' }} />
+                  style={{ background: 'transparent', border: '1px solid #333' }} />
                 <select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value as any })}
                   className="input-f w-full p-3 rounded-xl text-white"
-                  style={{ background: '#0B0B0F', border: '1px solid #333' }}>
+                  style={{ background: 'transparent', border: '1px solid #333' }}>
                   <option value="test">🧪 Test rejim</option>
                   <option value="live">🟢 Live rejim</option>
                 </select>
@@ -211,7 +211,7 @@ export default function PaymentsPage() {
 
               {gw.type !== 'cash' && gw.merchantId && (
                 <div className="p-2 rounded-lg mb-3 text-xs space-y-1"
-                  style={{ background: '#0B0B0F' }}>
+                  style={{ background: 'transparent' }}>
                   <p className="text-gray-400">Merchant ID: <span className="text-white">{gw.merchantId}</span></p>
                   {gw.serviceId && <p className="text-gray-400">Service ID: <span className="text-white">{gw.serviceId}</span></p>}
                   <p className="text-gray-400">Rejim: <span style={{ color: gw.mode === 'live' ? '#00C896' : '#D4AF37' }}>

@@ -90,7 +90,7 @@ function TrackingContent() {
   const payIcons: Record<string,string> = {click:'💳',payme:'💳',uzum:'🟠',cash:'💵'}
 
   if (!savedId) return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{background:'#0B0B0F'}}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{background:'transparent'}}>
       <div className="text-center">
         <div className="text-6xl mb-4">🔍</div>
         <p className="text-white text-lg font-bold mb-2">Buyurtma topilmadi</p>
@@ -100,7 +100,7 @@ function TrackingContent() {
   )
 
   return (
-    <div className="min-h-screen flex flex-col p-4" style={{background:'#0B0B0F'}}>
+    <div className="min-h-screen flex flex-col p-4" style={{background:'transparent'}}>
       <style>{`
         @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -149,7 +149,7 @@ function TrackingContent() {
           </div>
 
           {order?.items&&(
-            <div className="text-left space-y-2 mb-4 p-3 rounded-2xl slide-up" style={{background:'#0B0B0F'}}>
+            <div className="text-left space-y-2 mb-4 p-3 rounded-2xl slide-up" style={{background:'transparent'}}>
               {order.items.map((item:any,i:number)=>(
                 <div key={i} className="flex justify-between text-sm">
                   <span className="text-white">{item.menuItem?.name}</span>

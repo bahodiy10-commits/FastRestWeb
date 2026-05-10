@@ -98,7 +98,7 @@ export default function AdminMenuPage() {
           {/* Image upload */}
           <div onClick={()=>fileRef.current?.click()}
             className="img-upload w-full h-36 rounded-2xl mb-3 flex items-center justify-center cursor-pointer overflow-hidden"
-            style={{border:'2px dashed #333',background:'#0B0B0F'}}>
+            style={{border:'2px dashed #333',background:'transparent'}}>
             {imagePreview ? (
               <img src={imagePreview} alt="preview" className="w-full h-full object-cover rounded-2xl"/>
             ) : (
@@ -123,7 +123,7 @@ export default function AdminMenuPage() {
                 value={form[f.key as keyof typeof form]}
                 onChange={e=>setForm({...form,[f.key]:e.target.value})}
                 className="input-f w-full p-3 rounded-xl text-white"
-                style={{background:'#0B0B0F',border:'1px solid #333'}}/>
+                style={{background:'transparent',border:'1px solid #333'}}/>
             ))}
           </div>
 
@@ -150,7 +150,7 @@ export default function AdminMenuPage() {
               <img src={item.image} alt={item.name} className="w-full h-28 object-cover"/>
             ) : (
               <div className="w-full h-28 flex items-center justify-center text-4xl"
-                style={{background:'#0B0B0F'}}>🍽️</div>
+                style={{background:'transparent'}}>🍽️</div>
             )}
             <div className="p-3">
               <p className="text-white font-bold text-sm leading-tight">{item.name}</p>

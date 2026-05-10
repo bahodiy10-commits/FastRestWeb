@@ -14,10 +14,10 @@ const adminNav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   return (
-    <div className="pb-20" style={{ background: '#0B0B0F', minHeight: '100vh' }}>
+    <div className="pb-20" style={{ minHeight: '100vh' }}>
       {children}
       <div className="fixed bottom-0 left-0 right-0 z-50 flex overflow-x-auto"
-        style={{ background: '#1E1E24', borderTop: '1px solid #2A2A35' }}>
+        style={{ background: 'rgba(30,30,36,0.95)', borderTop: '1px solid #2A2A35', backdropFilter: 'blur(12px)' }}>
         {adminNav.map(item => (
           <Link key={item.href} href={item.href}
             className="flex-1 flex flex-col items-center py-2 min-w-0"

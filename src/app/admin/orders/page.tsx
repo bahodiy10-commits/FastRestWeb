@@ -75,7 +75,7 @@ export default function OrdersPage() {
                 <select onChange={e => updateStatus(order.id, e.target.value)}
                   value={order.status}
                   className="text-sm px-2 py-1 rounded-lg"
-                  style={{background: '#0B0B0F', color: '#fff', border: '1px solid #333'}}>
+                  style={{background: 'transparent', color: '#fff', border: '1px solid #333'}}>
                   <option value="new">Yangi</option>
                   <option value="preparing">Jarayonda</option>
                   <option value="ready">Tayyor</option>

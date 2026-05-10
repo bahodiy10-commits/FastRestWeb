@@ -39,7 +39,7 @@ export default function KitchenPage() {
   const handleLogout = async () => { await signOut(auth); router.push('/') }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: '#0B0B0F' }}>
+    <div className="min-h-screen p-4" style={{ }}>
       <style>{`
         @keyframes slideUp { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0}to{opacity:1} }
@@ -104,7 +104,7 @@ export default function KitchenPage() {
                 </span>
               </div>
 
-              <div className="space-y-2 mb-4 p-3 rounded-xl" style={{background:'#0B0B0F'}}>
+              <div className="space-y-2 mb-4 p-3 rounded-xl" style={{background:'transparent'}}>
                 {order.items?.map((item:any,i:number)=>(
                   <div key={i} className="flex justify-between text-sm">
                     <span className="text-white font-medium">{item.menuItem?.name}</span>
