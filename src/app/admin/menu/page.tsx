@@ -4,12 +4,28 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'fireb
 import { db } from '@/lib/firebase'
 import { MenuItem } from '@/types'
 
+async function compressImage(base64: string, maxWidth = 600): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      let w = img.width, h = img.height
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth }
+      canvas.width = w; canvas.height = h
+      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+      resolve(canvas.toDataURL('image/jpeg', 0.65))
+    }
+    img.src = base64
+  })
+}
+
 export default function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({name:'',description:'',price:'',category:'',prepTime:'',image:''})
   const [imagePreview, setImagePreview] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(()=>{
@@ -19,34 +35,42 @@ export default function AdminMenuPage() {
     return unsub
   },[])
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if(!file) return
     const reader = new FileReader()
-    reader.onload = (ev) => {
-      const base64 = ev.target?.result as string
-      setForm(f=>({...f,image:base64}))
-      setImagePreview(base64)
+    reader.onload = async (ev) => {
+      const compressed = await compressImage(ev.target?.result as string)
+      setForm(f=>({...f,image:compressed}))
+      setImagePreview(compressed)
+      const kb = Math.round(compressed.length * 0.75 / 1024)
+      console.log('Image size:', kb, 'KB')
     }
     reader.readAsDataURL(file)
   }
 
   const handleSave = async () => {
-    if(!form.name||!form.price) return
+    setError('')
+    if(!form.name||!form.price) return setError('Nom va narx kiritish shart')
     setSaving(true)
     try {
       await addDoc(collection(db,'menu'),{
-        name:form.name, description:form.description,
-        price:parseInt(form.price),
-        category:form.category||'Asosiy',
-        prepTime:parseInt(form.prepTime)||10,
-        available:true,
-        image:form.image||'',
+        name: form.name,
+        description: form.description,
+        price: parseInt(form.price),
+        category: form.category||'Asosiy',
+        prepTime: parseInt(form.prepTime)||10,
+        available: true,
+        image: form.image||'',
       })
       setForm({name:'',description:'',price:'',category:'',prepTime:'',image:''})
       setImagePreview('')
       setShowForm(false)
-    } finally { setSaving(false) }
+    } catch(e:any) {
+      setError('Xato: ' + (e?.message || 'Noma\'lum xato'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   const toggleAvailable = async (id:string,available:boolean) => {
@@ -57,25 +81,31 @@ export default function AdminMenuPage() {
     await deleteDoc(doc(db,'menu',id))
   }
 
+  const resetForm = () => {
+    setShowForm(false)
+    setImagePreview('')
+    setError('')
+    setForm({name:'',description:'',price:'',category:'',prepTime:'',image:''})
+  }
+
   return (
     <div className="p-4">
       <style>{`
         @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        .item-card{animation:slideUp 0.4s ease both;transition:transform 0.2s}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .item-card{animation:slideUp 0.4s ease both;transition:transform 0.2s,box-shadow 0.2s}
         .item-card:hover{transform:translateY(-2px)}
         .item-card:nth-child(1){animation-delay:0.03s}
         .item-card:nth-child(2){animation-delay:0.06s}
         .item-card:nth-child(3){animation-delay:0.09s}
-        .item-card:nth-child(4){animation-delay:0.12s}
-        .item-card:nth-child(n+5){animation-delay:0.15s}
-        .btn{transition:transform 0.15s ease,opacity 0.15s}
+        .item-card:nth-child(n+4){animation-delay:0.12s}
+        .btn{transition:transform 0.15s ease}
         .btn:active{transform:scale(0.93)}
         .input-f{transition:border-color 0.2s}
         .input-f:focus{border-color:rgba(212,175,55,0.6)!important;outline:none;box-shadow:0 0 0 3px rgba(212,175,55,0.1)}
         .img-upload{transition:border-color 0.2s,background 0.2s}
-        .img-upload:hover{border-color:rgba(212,175,55,0.5)!important;background:rgba(212,175,55,0.05)}
-        @keyframes spin{to{transform:rotate(360deg)}}
+        .img-upload:hover{border-color:rgba(212,175,55,0.5)!important}
         .spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
       `}</style>
 
@@ -92,20 +122,19 @@ export default function AdminMenuPage() {
       </div>
 
       {showForm&&(
-        <div className="p-4 rounded-2xl mb-6" style={{background:'#1E1E24',border:'1px solid #2A2A35',animation:'slideUp 0.3s ease'}}>
+        <div className="p-4 rounded-2xl mb-6" style={{background:'rgba(30,30,36,0.97)',border:'1px solid #2A2A35',animation:'slideUp 0.3s ease'}}>
           <p className="text-white font-bold mb-4">➕ Yangi mahsulot</p>
 
-          {/* Image upload */}
           <div onClick={()=>fileRef.current?.click()}
             className="img-upload w-full h-36 rounded-2xl mb-3 flex items-center justify-center cursor-pointer overflow-hidden"
-            style={{border:'2px dashed #333',background:'transparent'}}>
+            style={{border:'2px dashed #333',background:'rgba(0,0,0,0.3)'}}>
             {imagePreview ? (
               <img src={imagePreview} alt="preview" className="w-full h-full object-cover rounded-2xl"/>
             ) : (
               <div className="text-center">
                 <div className="text-3xl mb-1">📷</div>
-                <p className="text-gray-500 text-sm">Rasm yuklash</p>
-                <p className="text-gray-700 text-xs mt-1">JPG, PNG</p>
+                <p className="text-gray-500 text-sm">Rasm yuklash (ixtiyoriy)</p>
+                <p className="text-gray-700 text-xs mt-1">Auto siqiladi ~50KB</p>
               </div>
             )}
           </div>
@@ -123,17 +152,24 @@ export default function AdminMenuPage() {
                 value={form[f.key as keyof typeof form]}
                 onChange={e=>setForm({...form,[f.key]:e.target.value})}
                 className="input-f w-full p-3 rounded-xl text-white"
-                style={{background:'transparent',border:'1px solid #333'}}/>
+                style={{background:'rgba(0,0,0,0.4)',border:'1px solid #333'}}/>
             ))}
           </div>
+
+          {error && (
+            <div className="mt-3 p-3 rounded-xl text-xs"
+              style={{background:'rgba(255,77,109,0.1)',color:'#FF4D6D',border:'1px solid rgba(255,77,109,0.3)'}}>
+              ⚠️ {error}
+            </div>
+          )}
 
           <div className="flex gap-2 mt-4">
             <button onClick={handleSave} disabled={saving}
               className="btn flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2"
-              style={{background:saving?'#8a7020':'#D4AF37'}}>
+              style={{background:saving?'#8a7020':'#D4AF37',cursor:saving?'not-allowed':'pointer'}}>
               {saving?<><span className="spinner"/>Saqlanmoqda...</>:'✅ Saqlash'}
             </button>
-            <button onClick={()=>{setShowForm(false);setImagePreview('');setForm({name:'',description:'',price:'',category:'',prepTime:'',image:''})}}
+            <button onClick={resetForm}
               className="btn flex-1 py-3 rounded-xl text-white"
               style={{background:'#2A2A35'}}>
               Bekor
@@ -145,23 +181,26 @@ export default function AdminMenuPage() {
       <div className="grid grid-cols-2 gap-3">
         {items.map(item=>(
           <div key={item.id} className="item-card rounded-2xl overflow-hidden"
-            style={{background:'#1E1E24',border:'1px solid #2A2A35'}}>
+            style={{background:'rgba(30,30,36,0.97)',border:'1px solid #2A2A35'}}>
             {item.image ? (
-              <img src={item.image} alt={item.name} className="w-full h-28 object-cover"/>
+              <img src={item.image} alt={item.name} className="w-full h-28 object-cover" loading="lazy"/>
             ) : (
               <div className="w-full h-28 flex items-center justify-center text-4xl"
-                style={{background:'transparent'}}>🍽️</div>
+                style={{background:'rgba(0,0,0,0.3)'}}>🍽️</div>
             )}
             <div className="p-3">
               <p className="text-white font-bold text-sm leading-tight">{item.name}</p>
+              <p className="text-gray-400 text-xs mt-0.5 line-clamp-1">{item.description}</p>
               <p className="font-bold mt-1 text-sm" style={{color:'#D4AF37'}}>{item.price?.toLocaleString()} so'm</p>
               <p className="text-gray-600 text-xs mt-0.5">{item.category} • {item.prepTime} daq</p>
               <div className="flex gap-1 mt-2">
                 <button onClick={()=>toggleAvailable(item.id,item.available)}
                   className="btn flex-1 py-1 rounded-lg text-xs font-medium"
-                  style={{background:item.available?'rgba(0,200,150,0.15)':'rgba(255,77,109,0.15)',
-                    color:item.available?'#00C896':'#FF4D6D'}}>
-                  {item.available?'✅':'❌'}
+                  style={{
+                    background:item.available?'rgba(0,200,150,0.15)':'rgba(255,77,109,0.15)',
+                    color:item.available?'#00C896':'#FF4D6D'
+                  }}>
+                  {item.available?'✅ Bor':'❌ Yo\'q'}
                 </button>
                 <button onClick={()=>deleteItem(item.id)}
                   className="btn px-2 py-1 rounded-lg text-xs"
