@@ -7,7 +7,16 @@ export default function BgWrapper({ children }: { children: React.ReactNode }) {
   const [bg, setBg] = useState('')
 
   useEffect(() => {
+    // CSS custom property -- haqiqiy viewport balandligi
+    const setVh = () => {
+      document.documentElement.style.setProperty('--real-vh', `${window.innerHeight}px`)
+    }
+    setVh()
+    window.addEventListener('resize', setVh)
+    window.addEventListener('orientationchange', setVh)
+
     try { const v = localStorage.getItem('menuBackground'); if (v) setBg(v) } catch(e) {}
+
     const unsub = onSnapshot(doc(db, 'settings', 'background'), snap => {
       if (snap.exists()) {
         const img = snap.data().image || ''
@@ -18,7 +27,11 @@ export default function BgWrapper({ children }: { children: React.ReactNode }) {
         } catch(e) {}
       }
     })
-    return unsub
+    return () => {
+      unsub()
+      window.removeEventListener('resize', setVh)
+      window.removeEventListener('orientationchange', setVh)
+    }
   }, [])
 
   return (
@@ -28,14 +41,14 @@ export default function BgWrapper({ children }: { children: React.ReactNode }) {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '100vw',
-          height: '100vh',
+          width: '100%',
+          height: 'var(--real-vh, 100vh)',
           zIndex: 0,
           backgroundImage: `url(${bg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center top',
+          backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.28,
+          opacity: 0.3,
           pointerEvents: 'none',
         }}/>
       )}
